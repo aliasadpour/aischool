@@ -196,79 +196,62 @@ Upload Grammar Video
 
 <div id="videosList"></div>
 
-
-</div>
-<script>
+</div> 
 
 
-// =====================================
-// SUPABASE CONNECTION
-// =====================================
-
+  <script>
 
 const SUPABASE_URL =
-
 "https://xtmjnawhfxfdjlijfxgj.supabase.co";
 
 
-
 const SUPABASE_KEY =
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0bWpuYXdoZnhmZGpsaWpmeGdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzODkzNTksImV4cCI6MjA5OTY1MzV9.EXemiLr6GbCN5yFzLtmotBVW2EPFKKxCRQ0m8cx0O8s";
-
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0bWpuYXdoZnhmZGpsaWpmeGdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzODkzNTksImV4cCI6MjA5OTY1MzV9.EXEmiLr6GbCN5yFzLtmotBVW2EPFKKxCRQ0m8cx0O8s";
 
 
 const supabaseClient =
-
 supabase.createClient(
-
 SUPABASE_URL,
-
 SUPABASE_KEY
-
 );
 
 
 
-
-
-// =====================================
-// UPLOAD FILE TO SUPABASE STORAGE
-// =====================================
-
+// =============================
+// UPLOAD TO STORAGE
+// =============================
 
 async function uploadFile(bucket,file){
 
-console.log("Uploading:", file.name);
-console.log("Bucket:", bucket);
-  
-let fileName =
 
-Date.now() + "-" + file.name;
+console.log("Uploading...");
+console.log("Bucket:",bucket);
+console.log("File:",file.name);
+
+
+let fileName =
+Date.now()+"-"+file.name;
 
 
 
 const {data,error}=
 
 await supabaseClient
-
 .storage
-
 .from(bucket)
-
 .upload(
-
 fileName,
-
 file
-
 );
 
 
 
 if(error){
 
+console.error(error);
+
 alert(
-"Upload error: " + error.message
+"Storage error: "+error.message
 );
 
 return null;
@@ -277,24 +260,25 @@ return null;
 
 
 
-
-const url =
+const publicURL =
 
 supabaseClient
-
 .storage
-
 .from(bucket)
-
 .getPublicUrl(fileName)
-
 .data
-
 .publicUrl;
 
 
 
-return url;
+console.log(
+"Uploaded URL:",
+publicURL
+);
+
+
+
+return publicURL;
 
 
 }
@@ -304,37 +288,29 @@ return url;
 
 
 
-
-// =====================================
-// ADD AUDIO UNIT
-// =====================================
-
+// =============================
+// AUDIO UPLOAD
+// =============================
 
 async function addUnit(){
 
 
-
 let course =
-
 document.getElementById("course").value;
 
 
-
 let name =
-
 document.getElementById("unitName").value;
 
 
-
 let file =
-
 document.getElementById("audioFile").files[0];
 
 
 
 if(!file){
 
-alert("Please select audio");
+alert("Choose audio file");
 
 return;
 
@@ -342,7 +318,7 @@ return;
 
 
 
-let audioURL =
+let url =
 
 await uploadFile(
 "level 1",
@@ -350,36 +326,32 @@ file
 );
 
 
-if(!audioURL)
 
-return;
-
-
+if(!url)return;
 
 
 
 const {error}=
 
 await supabaseClient
-
 .from("units")
-
 .insert({
 
 course:course,
 
 name:name,
 
-audio_url:audioURL
+audio_url:url
 
 });
 
 
 
-
 if(error){
 
-alert(error.message);
+alert(
+"Database error: "+error.message
+);
 
 return;
 
@@ -387,7 +359,9 @@ return;
 
 
 
-alert("Audio Unit Added");
+alert(
+"Audio uploaded successfully"
+);
 
 
 
@@ -402,42 +376,33 @@ loadUnits();
 
 
 
-// =====================================
-// ADD GRAMMAR VIDEO
-// =====================================
-
+// =============================
+// VIDEO UPLOAD
+// =============================
 
 async function addGrammarVideo(){
 
 
-
 let title =
-
 document.getElementById("grammarTitle").value;
 
 
-
 let sub =
-
 document.getElementById("subGrammar").value;
 
 
+let quiz =
+document.getElementById("quizLink").value;
+
 
 let file =
-
 document.getElementById("videoFile").files[0];
-
-
-
-let quiz =
-
-document.getElementById("quizLink").value;
 
 
 
 if(!file){
 
-alert("Please select video");
+alert("Choose video file");
 
 return;
 
@@ -445,7 +410,7 @@ return;
 
 
 
-let videoURL =
+let url =
 
 await uploadFile(
 "present simple",
@@ -454,9 +419,7 @@ file
 
 
 
-if(!videoURL)
-
-return;
+if(!url)return;
 
 
 
@@ -464,16 +427,14 @@ return;
 const {error}=
 
 await supabaseClient
-
 .from("grammarVideos")
-
 .insert({
 
 grammar_title:title,
 
 sub_grammars:sub,
 
-video_url:videoURL,
+video_url:url,
 
 quiz_link:quiz
 
@@ -481,10 +442,11 @@ quiz_link:quiz
 
 
 
-
 if(error){
 
-alert(error.message);
+alert(
+"Database error: "+error.message
+);
 
 return;
 
@@ -492,7 +454,9 @@ return;
 
 
 
-alert("Grammar Video Added");
+alert(
+"Video uploaded successfully"
+);
 
 
 
@@ -507,37 +471,25 @@ loadVideos();
 
 
 
-// =====================================
-// LOAD AUDIO UNITS
-// =====================================
 
+// =============================
+// SHOW AUDIO
+// =============================
 
 async function loadUnits(){
-
 
 
 const {data,error}=
 
 await supabaseClient
-
 .from("units")
-
 .select("*")
-
-.order(
-
-"id",
-
-{ascending:false}
-
-);
+.order("id",{ascending:false});
 
 
 
 let box =
-
 document.getElementById("unitsList");
-
 
 
 box.innerHTML="";
@@ -557,27 +509,13 @@ return;
 data.forEach(item=>{
 
 
-box.innerHTML +=
-
-
-`
+box.innerHTML += `
 
 <div class="item">
 
+<h3>${item.course}</h3>
 
-<h3>
-
-${item.course}
-
-</h3>
-
-
-<p>
-
-${item.name}
-
-</p>
-
+<p>${item.name}</p>
 
 
 <audio controls>
@@ -591,17 +529,21 @@ ${item.name}
 
 `;
 
-
 });
-
 
 
 }
 
-  // =====================================
-// LOAD GRAMMAR VIDEOS
-// =====================================
 
+
+
+
+
+
+
+// =============================
+// SHOW VIDEOS
+// =============================
 
 async function loadVideos(){
 
@@ -609,23 +551,13 @@ async function loadVideos(){
 const {data,error}=
 
 await supabaseClient
-
 .from("grammarVideos")
-
 .select("*")
-
-.order(
-
-"id",
-
-{ascending:false}
-
-);
+.order("id",{ascending:false});
 
 
 
 let box =
-
 document.getElementById("videosList");
 
 
@@ -647,32 +579,15 @@ return;
 data.forEach(item=>{
 
 
-box.innerHTML +=
-
-
-`
+box.innerHTML += `
 
 <div class="item">
 
 
-<h3>
-
-${item.grammar_title}
-
-</h3>
+<h3>${item.grammar_title}</h3>
 
 
-
-<p>
-
-<b>Sub Grammars:</b>
-
-<br>
-
-${item.sub_grammars}
-
-</p>
-
+<p>${item.sub_grammars}</p>
 
 
 <video controls>
@@ -682,23 +597,18 @@ ${item.sub_grammars}
 </video>
 
 
-
-<br><br>
-
+<br>
 
 <a href="${item.quiz_link}" target="_blank">
 
-Open Google Quiz
+Open Quiz
 
 </a>
-
 
 
 </div>
 
 `;
-
-
 
 });
 
@@ -709,23 +619,9 @@ Open Google Quiz
 
 
 
-
-// =====================================
-// START
-// =====================================
-
-
 loadUnits();
 
 loadVideos();
 
 
-
 </script>
-
-
-</div>
-
-</body>
-
-</html>
