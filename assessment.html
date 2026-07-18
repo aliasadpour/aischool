@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>AI Speaking Assessment</title>
+
+
+<style>
+
+body{
+
+margin:0;
+padding:40px;
+
+font-family:Arial,sans-serif;
+
+background:linear-gradient(135deg,#0f172a,#2563eb);
+
+color:white;
+
+}
+
+
+
+.container{
+
+max-width:900px;
+
+margin:auto;
+
+background:rgba(255,255,255,0.15);
+
+backdrop-filter:blur(15px);
+
+padding:40px;
+
+border-radius:25px;
+
+}
+
+
+
+h1{
+
+text-align:center;
+
+}
+
+
+
+.card{
+
+background:rgba(255,255,255,.12);
+
+padding:25px;
+
+border-radius:20px;
+
+margin-top:25px;
+
+}
+
+
+
+button{
+
+padding:15px 25px;
+
+border:none;
+
+border-radius:30px;
+
+cursor:pointer;
+
+font-size:16px;
+
+margin:10px;
+
+}
+
+
+
+.record{
+
+background:#22c55e;
+
+color:white;
+
+}
+
+
+
+.stop{
+
+background:#ef4444;
+
+color:white;
+
+}
+
+
+
+.delete{
+
+background:#dc2626;
+
+color:white;
+
+}
+
+
+
+.submit{
+
+width:100%;
+
+background:#38bdf8;
+
+color:white;
+
+font-size:20px;
+
+}
+
+
+
+audio{
+
+width:100%;
+
+margin-top:15px;
+
+}
+
+
+
+.answer{
+
+background:rgba(0,0,0,.25);
+
+padding:20px;
+
+border-radius:15px;
+
+margin-top:20px;
+
+}
+
+
+
+#status{
+
+font-size:18px;
+
+margin:20px;
+
+}
+
+
+
+.report{
+
+display:none;
+
+margin-top:30px;
+
+padding:25px;
+
+border-radius:20px;
+
+background:rgba(34,197,94,.2);
+
+}
+
+
+
+.back{
+
+background:#64748b;
+
+color:white;
+
+}
+
+
+</style>
+
+</head>
+
+
+
+<body>
+
+
+<div class="container">
+
+
+<button class="back" onclick="history.back()">
+
+⬅ Back
+
+</button>
+
+
+
+<h1 id="courseTitle">
+
+🤖 AI Speaking Assessment
+
+</h1>
+
+
+
+
+
+<div class="card">
+
+<h2>
+🎧 Question Audio
+</h2>
+
+
+<audio id="questionAudio" controls></audio>
+
+
+</div>
+
+
+
+
+
+<div class="card">
+
+<h2>
+🎤 Record Your Answer
+</h2>
+
+
+
+<button id="record" class="record">
+
+🎤 Start Recording
+
+</button>
+
+
+
+<div id="status">
+
+Ready
+
+</div>
+
+
+
+<div id="answers"></div>
+
+
+
+</div>
+
+
+
+
+
+
+<button id="submitAI" class="submit">
+
+🤖 Submit Answer To AI
+
+</button>
+
+
+
+
+
+<div id="report" class="report">
+
+
+<h2>
+AI Feedback
+</h2>
+
+
+<p>⭐ Grammar: 8/10</p>
+
+<p>⭐ Vocabulary: 8/10</p>
+
+<p>⭐ Fluency: 7/10</p>
+
+<p>⭐ Pronunciation: 8/10</p>
+
+
+<h3>
+Overall Score: 7.8
+</h3>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+
+
+
+
+<script>
+
+
+// ===============================
+// LOAD UNIT AUDIO
+// ===============================
+
+
+let params = new URLSearchParams(
+window.location.search
+);
+
+
+
+let id = params.get("id");
+
+
+
+let units = JSON.parse(
+
+localStorage.getItem("units")
+
+) || [];
+
+
+
+let unit = units.find(
+
+x => x.id == id
+
+);
+
+
+
+const questionAudio =
+
+document.getElementById("questionAudio");
+
+
+
+if(unit){
+
+
+document.getElementById("courseTitle").innerHTML =
+
+"🤖 AI Speaking Assessment<br>" + unit.name;
+
+
+
+questionAudio.src = unit.audio;
+
+
+}
+
+
+
+
+// ===============================
+// SINGLE RECORDING
+// ===============================
+
+
+let recorder;
+
+let chunks=[];
+
+let finalChunks=[];
+
+let finalBlob=null;
+
+
+
+const recordButton =
+
+document.getElementById("record");
+
+
+
+const status =
+
+document.getElementById("status");
+
+
+
+const answers =
+
+document.getElementById("answers");
+
+
+
+const submitAI =
+
+document.getElementById("submitAI");
+
+
+
+
+
+
+recordButton.onclick = async function(){
+
+
+
+// START RECORDING
+
+if(!recorder || recorder.state==="inactive"){
+
+
+
+questionAudio.pause();
+
+
+
+let stream = await navigator.mediaDevices.getUserMedia({
+
+audio:true
+
+});
+
+
+
+recorder = new MediaRecorder(stream);
+
+
+
+chunks=[];
+
+
+
+recorder.ondataavailable=function(e){
+
+
+if(e.data.size>0){
+
+chunks.push(e.data);
+
+}
+
+
+};
+
+
+
+
+
+recorder.onstop=function(){
+
+
+
+finalChunks.push(...chunks);
+
+
+
+finalBlob = new Blob(
+
+finalChunks,
+
+{
+
+type:"audio/webm"
+
+}
+
+);
+
+
+
+showAnswer();
+
+
+
+status.innerHTML=
+
+"✅ Answer saved";
+
+
+
+questionAudio.play();
+
+
+
+};
+
+
+
+
+
+recorder.start();
+
+
+
+recordButton.innerHTML=
+
+"⏹ Stop Recording";
+
+
+recordButton.className="stop";
+
+
+
+status.innerHTML=
+
+"🔴 Recording...";
+
+
+
+}
+
+else{
+
+
+recorder.stop();
+
+
+
+recorder.stream
+
+.getTracks()
+
+.forEach(
+
+track=>track.stop()
+
+);
+
+
+
+recordButton.innerHTML=
+
+"🎤 Start Recording";
+
+
+recordButton.className="record";
+
+
+
+}
+
+
+
+};
+
+
+
+
+
+
+
+
+function showAnswer(){
+
+
+
+answers.innerHTML="";
+
+
+
+let audio=document.createElement("audio");
+
+
+audio.controls=true;
+
+
+audio.src=
+
+URL.createObjectURL(finalBlob);
+
+
+
+
+let deleteButton=document.createElement("button");
+
+
+
+deleteButton.innerHTML=
+
+"🗑 Delete";
+
+
+
+deleteButton.className="delete";
+
+
+
+
+deleteButton.onclick=function(){
+
+
+
+finalChunks=[];
+
+finalBlob=null;
+
+answers.innerHTML="";
+
+status.innerHTML=
+
+"Answer deleted";
+
+
+};
+
+
+
+
+answers.innerHTML=
+
+"Your Answer<br>";
+
+
+
+answers.appendChild(audio);
+
+
+answers.appendChild(
+
+document.createElement("br")
+
+);
+
+
+
+answers.appendChild(deleteButton);
+
+
+
+}
+
+
+
+
+
+
+
+
+submitAI.onclick=function(){
+
+
+
+if(!finalBlob){
+
+
+alert(
+
+"Please record your answer first"
+
+);
+
+
+return;
+
+
+}
+
+
+
+status.innerHTML=
+
+"🤖 AI is evaluating...";
+
+
+
+setTimeout(function(){
+
+
+
+document.getElementById("report")
+
+.style.display="block";
+
+
+
+status.innerHTML=
+
+"✅ Completed";
+
+
+
+},2000);
+
+
+
+};
+
+
+
+</script>
+
+
+
+</body>
+
+</html>

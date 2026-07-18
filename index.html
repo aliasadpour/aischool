@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>English AI Academy</title>
+
+
+<style>
+
+body{
+
+margin:0;
+
+padding:40px;
+
+font-family:Arial,sans-serif;
+
+background:linear-gradient(135deg,#0f172a,#2563eb);
+
+color:white;
+
+}
+
+
+
+.container{
+
+max-width:1100px;
+
+margin:auto;
+
+}
+
+
+
+h1{
+
+text-align:center;
+
+font-size:45px;
+
+}
+
+
+
+.subtitle{
+
+text-align:center;
+
+font-size:20px;
+
+margin-bottom:40px;
+
+}
+
+
+
+.courses{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+
+gap:25px;
+
+}
+
+
+
+.course{
+
+background:rgba(255,255,255,.15);
+
+padding:35px;
+
+border-radius:25px;
+
+text-align:center;
+
+font-size:22px;
+
+transition:.3s;
+
+}
+
+
+
+.course:hover{
+
+transform:translateY(-10px);
+
+background:rgba(255,255,255,.3);
+
+}
+
+
+
+a{
+
+color:white;
+
+text-decoration:none;
+
+}
+
+
+
+.admin{
+
+margin-top:50px;
+
+text-align:center;
+
+}
+
+
+
+.admin a{
+
+background:#22c55e;
+
+padding:15px 30px;
+
+border-radius:30px;
+
+}
+
+
+</style>
+
+
+</head>
+
+
+
+<body>
+
+
+<div class="container">
+
+
+
+<h1>
+
+🤖 English AI Academy
+
+</h1>
+
+
+
+<div class="subtitle">
+
+AI Speaking Assessment Platform
+
+</div>
+
+
+
+
+
+<div class="courses">
+
+
+
+<div class="course">
+
+<a href="units.html?course=Business%20English">
+
+Business English
+
+</a>
+
+</div>
+
+
+
+
+<div class="course">
+
+<a href="units.html?course=KET">
+
+KET
+
+</a>
+
+</div>
+
+
+
+
+<div class="course">
+
+<a href="units.html?course=PET">
+
+PET
+
+</a>
+
+</div>
+
+
+
+
+<div class="course">
+
+<a href="units.html?course=FCE">
+
+FCE
+
+</a>
+
+</div>
+
+
+
+
+<div class="course">
+
+<a href="units.html?course=Trinity%20Grade%201">
+
+Trinity Grade 1
+
+</a>
+
+</div>
+
+
+
+
+<div class="course">
+
+<a href="units.html?course=Trinity%20Grade%202">
+
+Trinity Grade 2
+
+</a>
+
+</div>
+
+
+
+
+<div class="course">
+
+<a href="units.html?course=Trinity%20Grade%203">
+
+Trinity Grade 3
+
+</a>
+
+</div>
+
+
+
+
+<div class="course">
+
+<a href="units.html?course=Trinity%20Grade%204">
+
+Trinity Grade 4
+
+</a>
+
+</div>
+
+
+
+
+<div class="course">
+
+<a href="units.html?course=Trinity%20Grade%205">
+
+Trinity Grade 5
+
+</a>
+
+</div>
+
+
+
+
+<div class="course">
+
+<a href="units.html?course=Trinity%20Grade%206">
+
+Trinity Grade 6
+
+</a>
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+<div class="admin">
+
+
+<a href="admin.html">
+
+👨‍🏫 Admin Panel
+
+</a>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+
+
+<script>
+
+
+// ===============================
+// LOGIN PROTECTION
+// ===============================
+
+
+let user = localStorage.getItem("currentUser");
+
+
+
+if(!user){
+
+
+window.location.href="login.html";
+
+
+}
+
+
+
+</script>
+
+
+
+</body>
+
+
+</html>

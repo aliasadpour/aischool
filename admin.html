@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Admin Panel</title>
+
+
+<style>
+
+
+body{
+
+font-family:Arial;
+
+background:#0f172a;
+
+color:white;
+
+padding:40px;
+
+}
+
+
+.container{
+
+max-width:900px;
+
+margin:auto;
+
+}
+
+
+.card{
+
+background:#ffffff22;
+
+padding:30px;
+
+border-radius:20px;
+
+margin-bottom:20px;
+
+}
+
+
+input,select,button{
+
+width:90%;
+
+padding:15px;
+
+margin:10px;
+
+border-radius:10px;
+
+border:none;
+
+}
+
+
+button{
+
+background:#22c55e;
+
+color:white;
+
+cursor:pointer;
+
+}
+
+
+.unit{
+
+background:#0005;
+
+padding:20px;
+
+margin:15px;
+
+border-radius:15px;
+
+}
+
+
+audio,video{
+
+width:100%;
+
+}
+
+
+.delete{
+
+background:red;
+
+}
+
+
+.sub{
+
+display:flex;
+
+gap:10px;
+
+}
+
+
+</style>
+
+
+</head>
+
+
+
+<body>
+
+
+
+<div class="container">
+
+
+
+<h1>👨‍🏫 Admin Panel</h1>
+
+
+
+
+
+<!-- =========================
+CONVERSATION AUDIO SYSTEM
+========================= -->
+
+<div class="card">
+
+
+<h2>🎧 Conversation Units</h2>
+
+
+
+<select id="course" onchange="showUnits()">
+
+
+<option>Business English</option>
+
+<option>KET</option>
+
+<option>PET</option>
+
+<option>FCE</option>
+
+<option>Trinity Grade 1</option>
+
+<option>Trinity Grade 2</option>
+
+<option>Trinity Grade 3</option>
+
+<option>Trinity Grade 4</option>
+
+<option>Trinity Grade 5</option>
+
+<option>Trinity Grade 6</option>
+
+
+</select>
+
+
+
+
+<input id="unitName" placeholder="Unit name">
+
+
+
+<input id="audioFile" type="file" accept="audio/*">
+
+
+
+<button onclick="addUnit()">
+
+Add Unit
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+<div class="card">
+
+
+<h2 id="title"></h2>
+
+
+<div id="list"></div>
+
+
+</div>
+
+
+
+
+
+
+<!-- =========================
+GRAMMAR VIDEO SYSTEM
+========================= -->
+
+
+<div class="card">
+
+
+<h2>🎬 Grammar Video Management</h2>
+
+
+
+<input 
+id="grammarTitle"
+placeholder="Grammar title">
+
+
+
+
+<h3>Sub Grammars</h3>
+
+
+
+<div id="subContainer">
+
+
+
+<input 
+class="subInput"
+placeholder="Example: Positive Sentences">
+
+
+<input 
+class="subInput"
+placeholder="Example: Negative Sentences">
+
+
+
+</div>
+
+
+
+<button onclick="addSub()">
+
+➕ Add Sub Grammar
+
+</button>
+
+
+
+
+
+<input 
+id="videoFile"
+type="file"
+accept="video/mp4">
+
+
+
+
+
+<input
+
+id="quizLink"
+
+placeholder="Google Quiz Link">
+
+
+
+
+
+<button onclick="addGrammarVideo()">
+
+Add Grammar Video
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+<div class="card">
+
+
+<h2>🎬 Added Grammar Videos</h2>
+
+
+<div id="grammarList"></div>
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+<script>
+
+
+
+
+
+// ===============================
+// CONVERSATION DATABASE
+// ===============================
+
+
+function getUnits(){
+
+
+return JSON.parse(
+
+localStorage.getItem("units")
+
+)||[];
+
+
+}
+
+
+
+
+function saveUnit(unit){
+
+
+let data=getUnits();
+
+
+data.push(unit);
+
+
+localStorage.setItem(
+
+"units",
+
+JSON.stringify(data)
+
+);
+
+
+}
+
+
+
+
+
+function addUnit(){
+
+
+let course=
+
+document.getElementById("course").value;
+
+
+
+let name=
+
+document.getElementById("unitName").value;
+
+
+
+let file=
+
+document.getElementById("audioFile").files[0];
+
+
+
+
+if(name==""){
+
+alert("Enter unit name");
+
+return;
+
+}
+
+
+
+if(!file){
+
+alert("Choose audio");
+
+return;
+
+}
+
+
+
+let reader=new FileReader();
+
+
+
+reader.onload=function(){
+
+
+
+let unit={
+
+
+id:Date.now(),
+
+
+course:course,
+
+
+name:name,
+
+
+audio:reader.result,
+
+
+type:file.type
+
+
+};
+
+
+
+saveUnit(unit);
+
+
+
+alert("Added to "+course);
+
+
+
+document.getElementById("unitName").value="";
+
+
+document.getElementById("audioFile").value="";
+
+
+
+showUnits();
+
+
+
+};
+
+
+
+reader.readAsDataURL(file);
+
+
+
+}
+
+
+
+
+
+
+
+
+function showUnits(){
+
+
+
+let course=
+
+document.getElementById("course").value;
+
+
+
+document.getElementById("title").innerHTML=
+
+"Units - "+course;
+
+
+
+let list=
+
+document.getElementById("list");
+
+
+
+list.innerHTML="";
+
+
+
+let data=getUnits();
+
+
+
+let found=false;
+
+
+
+data.forEach(function(item){
+
+
+
+if(item.course==course){
+
+
+
+found=true;
+
+
+
+list.innerHTML +=
+
+
+`
+
+<div class="unit">
+
+
+<h3>${item.name}</h3>
+
+
+<audio controls src="${item.audio}"></audio>
+
+
+<br>
+
+
+<button class="delete"
+
+onclick="removeUnit(${item.id})">
+
+Delete
+
+</button>
+
+
+</div>
+
+
+`;
+
+
+
+}
+
+
+});
+
+
+
+if(!found){
+
+list.innerHTML="<h3>No units</h3>";
+
+}
+
+
+
+}
+
+
+
+
+
+function removeUnit(id){
+
+
+let data=getUnits();
+
+
+
+data=data.filter(
+
+x=>x.id!=id
+
+);
+
+
+
+localStorage.setItem(
+
+"units",
+
+JSON.stringify(data)
+
+);
+
+
+
+showUnits();
+
+
+}
+
+
+
+
+
+
+
+
+
+// ===============================
+// GRAMMAR VIDEO DATABASE
+// ===============================
+
+
+
+function getGrammarVideos(){
+
+
+return JSON.parse(
+
+localStorage.getItem("grammarVideos")
+
+)||[];
+
+
+}
+
+
+
+
+
+
+function saveGrammarVideo(item){
+
+
+let data=getGrammarVideos();
+
+
+
+data.push(item);
+
+
+
+localStorage.setItem(
+
+"grammarVideos",
+
+JSON.stringify(data)
+
+);
+
+
+}
+
+
+
+
+
+
+
+
+
+// ADD SUB GRAMMAR INPUT
+
+function addSub(){
+
+
+
+let div=
+
+document.getElementById("subContainer");
+
+
+
+let input=
+
+document.createElement("input");
+
+
+
+input.className="subInput";
+
+
+input.placeholder=
+
+"New Sub Grammar";
+
+
+
+div.appendChild(input);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// SAVE GRAMMAR VIDEO
+
+
+function addGrammarVideo(){
+
+
+
+let title=
+
+document.getElementById("grammarTitle").value;
+
+
+
+let subs=[];
+
+
+
+document.querySelectorAll(".subInput")
+
+.forEach(function(x){
+
+
+
+if(x.value.trim()!=""){
+
+
+subs.push(x.value.trim());
+
+
+}
+
+
+});
+
+
+
+
+let file=
+
+document.getElementById("videoFile").files[0];
+
+
+
+let quiz=
+
+document.getElementById("quizLink").value;
+
+
+
+
+
+if(title==""){
+
+
+alert("Enter grammar title");
+
+return;
+
+
+}
+
+
+
+if(!file){
+
+
+alert("Choose video");
+
+return;
+
+
+}
+
+
+
+
+
+let reader=new FileReader();
+
+
+
+reader.onload=function(){
+
+
+
+let item={
+
+
+
+id:Date.now(),
+
+
+grammarTitle:title,
+
+
+subGrammars:subs,
+
+
+video:reader.result,
+
+
+quizLink:quiz
+
+
+
+};
+
+
+
+
+saveGrammarVideo(item);
+
+
+
+alert("Grammar video added");
+
+
+
+showGrammarVideos();
+
+
+
+
+
+};
+
+
+
+
+reader.readAsDataURL(file);
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+function showGrammarVideos(){
+
+
+
+let list=
+
+document.getElementById("grammarList");
+
+
+
+list.innerHTML="";
+
+
+
+let data=getGrammarVideos();
+
+
+
+data.forEach(function(item){
+
+
+
+list.innerHTML +=
+
+
+
+`
+
+<div class="unit">
+
+
+<h3>${item.grammarTitle}</h3>
+
+
+<video controls src="${item.video}"></video>
+
+
+<p>
+
+${item.subGrammars.join(", ")}
+
+</p>
+
+
+<button class="delete"
+
+onclick="deleteGrammar(${item.id})">
+
+Delete
+
+</button>
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+
+}
+
+
+
+
+
+
+
+function deleteGrammar(id){
+
+
+
+let data=getGrammarVideos();
+
+
+
+data=data.filter(
+
+x=>x.id!=id
+
+);
+
+
+
+localStorage.setItem(
+
+"grammarVideos",
+
+JSON.stringify(data)
+
+);
+
+
+
+showGrammarVideos();
+
+
+
+}
+
+
+
+
+
+
+
+
+showUnits();
+
+
+showGrammarVideos();
+
+
+
+</script>
+
+
+
+</body>
+
+</html>

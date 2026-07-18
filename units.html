@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Units</title>
+
+<style>
+
+body{
+
+font-family:Arial;
+background:linear-gradient(135deg,#0f172a,#2563eb);
+color:white;
+padding:40px;
+
+}
+
+
+.container{
+
+max-width:900px;
+margin:auto;
+
+}
+
+
+.unit{
+
+background:rgba(255,255,255,.15);
+padding:30px;
+border-radius:20px;
+margin:20px 0;
+
+}
+
+
+audio{
+
+width:100%;
+
+}
+
+
+</style>
+
+
+</head>
+
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1 id="title"></h1>
+
+
+<div id="list"></div>
+
+
+</div>
+
+
+
+
+<script>
+
+
+
+let course =
+
+new URLSearchParams(window.location.search)
+
+.get("course");
+
+
+
+document.getElementById("title").innerHTML=
+
+"📚 "+course;
+
+
+
+
+
+let units =
+
+JSON.parse(
+
+localStorage.getItem("units")
+
+)
+
+|| [];
+
+
+
+
+
+let list=document.getElementById("list");
+
+
+
+let found=false;
+
+
+
+
+
+units.forEach(function(item){
+
+
+
+if(item.course === course){
+
+
+
+found=true;
+
+
+
+list.innerHTML +=
+
+
+
+`
+
+<div class="unit">
+
+
+<h2>
+
+${item.name}
+
+</h2>
+
+
+
+<a href="assessment.html?id=${item.id}">
+
+🎧 Open Assessment
+
+</a>
+
+
+
+</div>
+
+
+`;
+
+
+
+}
+
+
+
+});
+
+
+
+
+
+if(found===false){
+
+
+list.innerHTML=
+
+"<h2>No units found for this course</h2>";
+
+
+
+}
+
+
+
+</script>
+
+
+
+</body>
+
+</html>
