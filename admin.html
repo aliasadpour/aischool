@@ -3,87 +3,67 @@
 
 <head>
 
-<title>Admin Panel</title>
+<title>Grammar Video Admin</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
 <style>
 
-
 body{
-
 font-family:Arial;
-
 background:#0f172a;
-
 color:white;
-
 padding:40px;
-
 }
-
 
 .container{
-
 max-width:900px;
-
 margin:auto;
-
 }
-
 
 .card{
-
 background:#ffffff22;
-
 padding:30px;
-
 border-radius:20px;
+margin-bottom:25px;
+}
 
-margin-bottom:20px;
+input,textarea,button{
+
+width:90%;
+padding:15px;
+margin:10px;
+border-radius:10px;
+border:none;
 
 }
 
-
-input,select,button{
-
-width:90%;
-
-padding:15px;
-
-margin:10px;
-
-border-radius:10px;
-
-border:none;
-
+textarea{
+height:100px;
 }
 
 
 button{
 
 background:#22c55e;
-
 color:white;
-
 cursor:pointer;
 
 }
 
 
-.unit{
+.video{
 
 background:#0005;
-
 padding:20px;
-
-margin:15px;
-
 border-radius:15px;
+margin:20px 0;
 
 }
 
 
-audio,video{
+video{
 
 width:100%;
 
@@ -96,103 +76,87 @@ background:red;
 
 }
 
-
-.sub{
-
-display:flex;
-
-gap:10px;
-
-}
-
-
 </style>
 
-
 </head>
-
 
 
 <body>
 
 
-
 <div class="container">
 
 
+<h1>
+🎥 Grammar Video Admin
+</h1>
 
-<h1>👨‍🏫 Admin Panel</h1>
-
-
-
-
-
-<!-- =========================
-CONVERSATION AUDIO SYSTEM
-========================= -->
 
 <div class="card">
 
 
-<h2>🎧 Conversation Units</h2>
+<h2>Add Grammar Video</h2>
 
 
+<input
+id="grammarTitle"
+placeholder="Grammar title">
 
-<select id="course" onchange="showUnits()">
-
-
-<option>Business English</option>
-
-<option>KET</option>
-
-<option>PET</option>
-
-<option>FCE</option>
-
-<option>Trinity Grade 1</option>
-
-<option>Trinity Grade 2</option>
-
-<option>Trinity Grade 3</option>
-
-<option>Trinity Grade 4</option>
-
-<option>Trinity Grade 5</option>
-
-<option>Trinity Grade 6</option>
+<br>
 
 
-</select>
+<textarea
+id="subGrammar"
+placeholder="Sub grammars
+
+Example:
+Positive sentences,
+Negative sentences,
+Questions,
+Short answers">
+
+</textarea>
 
 
+<br>
 
 
-<input id="unitName" placeholder="Unit name">
+<input
+id="videoFile"
+type="file"
+accept="video/mp4">
 
 
-
-<input id="audioFile" type="file" accept="audio/*">
-
+<br>
 
 
-<button onclick="addUnit()">
+<input
+id="quizLink"
+placeholder="Google Quiz Link">
 
-Add Unit
+
+<br>
+
+
+<button onclick="addVideo()">
+
+Upload Video
 
 </button>
 
+
+<p id="status"></p>
 
 
 </div>
 
 
 
-
-
 <div class="card">
 
-
-<h2 id="title"></h2>
+<h2>
+Uploaded Videos
+</h2>
 
 
 <div id="list"></div>
@@ -201,115 +165,7 @@ Add Unit
 </div>
 
 
-
-
-
-
-<!-- =========================
-GRAMMAR VIDEO SYSTEM
-========================= -->
-
-
-<div class="card">
-
-
-<h2>🎬 Grammar Video Management</h2>
-
-
-
-<input 
-id="grammarTitle"
-placeholder="Grammar title">
-
-
-
-
-<h3>Sub Grammars</h3>
-
-
-
-<div id="subContainer">
-
-
-
-<input 
-class="subInput"
-placeholder="Example: Positive Sentences">
-
-
-<input 
-class="subInput"
-placeholder="Example: Negative Sentences">
-
-
-
 </div>
-
-
-
-<button onclick="addSub()">
-
-➕ Add Sub Grammar
-
-</button>
-
-
-
-
-
-<input 
-id="videoFile"
-type="file"
-accept="video/mp4">
-
-
-
-
-
-<input
-
-id="quizLink"
-
-placeholder="Google Quiz Link">
-
-
-
-
-
-<button onclick="addGrammarVideo()">
-
-Add Grammar Video
-
-</button>
-
-
-
-</div>
-
-
-
-
-
-<div class="card">
-
-
-<h2>🎬 Added Grammar Videos</h2>
-
-
-<div id="grammarList"></div>
-
-
-</div>
-
-
-
-
-
-
-</div>
-
-
-
 
 
 
@@ -318,293 +174,80 @@ Add Grammar Video
 <script>
 
 
+// ===============================
+// SUPABASE CONNECTION
+// ===============================
+
+
+const SUPABASE_URL =
+"https://xtmjnawhfxfdjlijfxgj.supabase.co";
+
+
+const SUPABASE_KEY =
+"PASTE_YOUR_KEY_HERE";
+
+
+const supabaseClient =
+supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+
 
 
 
 // ===============================
-// CONVERSATION DATABASE
+// UPLOAD VIDEO TO STORAGE
 // ===============================
 
 
-function getUnits(){
+async function uploadVideo(file){
 
 
-return JSON.parse(
+let filename =
+Date.now()+"-"+file.name;
 
-localStorage.getItem("units")
 
-)||[];
 
+let {data,error}=
 
-}
-
-
-
-
-function saveUnit(unit){
-
-
-let data=getUnits();
-
-
-data.push(unit);
-
-
-localStorage.setItem(
-
-"units",
-
-JSON.stringify(data)
-
-);
-
-
-}
-
-
-
-
-
-function addUnit(){
-
-
-let course=
-
-document.getElementById("course").value;
-
-
-
-let name=
-
-document.getElementById("unitName").value;
-
-
-
-let file=
-
-document.getElementById("audioFile").files[0];
-
-
-
-
-if(name==""){
-
-alert("Enter unit name");
-
-return;
-
-}
-
-
-
-if(!file){
-
-alert("Choose audio");
-
-return;
-
-}
-
-
-
-let reader=new FileReader();
-
-
-
-reader.onload=function(){
-
-
-
-let unit={
-
-
-id:Date.now(),
-
-
-course:course,
-
-
-name:name,
-
-
-audio:reader.result,
-
-
-type:file.type
-
-
-};
-
-
-
-saveUnit(unit);
-
-
-
-alert("Added to "+course);
-
-
-
-document.getElementById("unitName").value="";
-
-
-document.getElementById("audioFile").value="";
-
-
-
-showUnits();
-
-
-
-};
-
-
-
-reader.readAsDataURL(file);
-
-
-
-}
-
-
-
-
-
-
-
-
-function showUnits(){
-
-
-
-let course=
-
-document.getElementById("course").value;
-
-
-
-document.getElementById("title").innerHTML=
-
-"Units - "+course;
-
-
-
-let list=
-
-document.getElementById("list");
-
-
-
-list.innerHTML="";
-
-
-
-let data=getUnits();
-
-
-
-let found=false;
-
-
-
-data.forEach(function(item){
-
-
-
-if(item.course==course){
-
-
-
-found=true;
-
-
-
-list.innerHTML +=
-
-
-`
-
-<div class="unit">
-
-
-<h3>${item.name}</h3>
-
-
-<audio controls src="${item.audio}"></audio>
-
-
-<br>
-
-
-<button class="delete"
-
-onclick="removeUnit(${item.id})">
-
-Delete
-
-</button>
-
-
-</div>
-
-
-`;
-
-
-
-}
-
-
-});
-
-
-
-if(!found){
-
-list.innerHTML="<h3>No units</h3>";
-
-}
-
-
-
-}
-
-
-
-
-
-function removeUnit(id){
-
-
-let data=getUnits();
-
-
-
-data=data.filter(
-
-x=>x.id!=id
-
+await supabaseClient
+.storage
+.from("lesson-videos")
+.upload(
+filename,
+file
 );
 
 
 
-localStorage.setItem(
+if(error){
 
-"units",
+alert(error.message);
 
-JSON.stringify(data)
-
-);
-
-
-
-showUnits();
-
+return null;
 
 }
 
 
 
+
+let url =
+
+supabaseClient
+.storage
+.from("lesson-videos")
+.getPublicUrl(filename)
+.data
+.publicUrl;
+
+
+
+return url;
+
+
+}
 
 
 
@@ -612,232 +255,92 @@ showUnits();
 
 
 // ===============================
-// GRAMMAR VIDEO DATABASE
+// ADD VIDEO
 // ===============================
 
 
+async function addVideo(){
 
-function getGrammarVideos(){
 
 
-return JSON.parse(
-
-localStorage.getItem("grammarVideos")
-
-)||[];
-
-
-}
-
-
-
-
-
-
-function saveGrammarVideo(item){
-
-
-let data=getGrammarVideos();
-
-
-
-data.push(item);
-
-
-
-localStorage.setItem(
-
-"grammarVideos",
-
-JSON.stringify(data)
-
-);
-
-
-}
-
-
-
-
-
-
-
-
-
-// ADD SUB GRAMMAR INPUT
-
-function addSub(){
-
-
-
-let div=
-
-document.getElementById("subContainer");
-
-
-
-let input=
-
-document.createElement("input");
-
-
-
-input.className="subInput";
-
-
-input.placeholder=
-
-"New Sub Grammar";
-
-
-
-div.appendChild(input);
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// SAVE GRAMMAR VIDEO
-
-
-function addGrammarVideo(){
-
-
-
-let title=
-
+let title =
 document.getElementById("grammarTitle").value;
 
 
 
-let subs=[];
+let sub =
+document.getElementById("subGrammar").value;
 
 
 
-document.querySelectorAll(".subInput")
-
-.forEach(function(x){
-
+let file =
+document.getElementById("videoFile").files[0];
 
 
-if(x.value.trim()!=""){
+
+let quiz =
+document.getElementById("quizLink").value;
 
 
-subs.push(x.value.trim());
 
+if(!title || !file){
+
+alert("Enter title and choose video");
+
+return;
 
 }
 
+
+
+document.getElementById("status").innerHTML =
+"Uploading...";
+
+
+
+let videoURL =
+await uploadVideo(file);
+
+
+
+if(!videoURL)
+return;
+
+
+
+let {error}=
+
+await supabaseClient
+.from("grammarVideos")
+.insert({
+
+grammar_title:title,
+
+sub_grammars:sub,
+
+video_url:videoURL,
+
+quiz_link:quiz
 
 });
 
 
 
+if(error){
 
-let file=
-
-document.getElementById("videoFile").files[0];
-
-
-
-let quiz=
-
-document.getElementById("quizLink").value;
-
-
-
-
-
-if(title==""){
-
-
-alert("Enter grammar title");
+alert(error.message);
 
 return;
 
-
 }
 
 
 
-if(!file){
+document.getElementById("status").innerHTML =
+"✅ Uploaded";
 
 
-alert("Choose video");
-
-return;
-
-
-}
-
-
-
-
-
-let reader=new FileReader();
-
-
-
-reader.onload=function(){
-
-
-
-let item={
-
-
-
-id:Date.now(),
-
-
-grammarTitle:title,
-
-
-subGrammars:subs,
-
-
-video:reader.result,
-
-
-quizLink:quiz
-
-
-
-};
-
-
-
-
-saveGrammarVideo(item);
-
-
-
-alert("Grammar video added");
-
-
-
-showGrammarVideos();
-
-
-
-
-
-};
-
-
-
-
-reader.readAsDataURL(file);
-
-
-
+loadVideos();
 
 
 }
@@ -848,55 +351,95 @@ reader.readAsDataURL(file);
 
 
 
+// ===============================
+// LOAD VIDEOS
+// ===============================
 
 
-function showGrammarVideos(){
+async function loadVideos(){
 
 
 
-let list=
+let {data,error}=
 
-document.getElementById("grammarList");
+await supabaseClient
+.from("grammarVideos")
+.select("*")
+.order("id",{ascending:false});
 
+
+
+let list =
+document.getElementById("list");
 
 
 list.innerHTML="";
 
 
 
-let data=getGrammarVideos();
+if(error){
+
+list.innerHTML=error.message;
+
+return;
+
+}
 
 
 
-data.forEach(function(item){
-
+data.forEach(item=>{
 
 
 list.innerHTML +=
 
 
-
 `
 
-<div class="unit">
+<div class="video">
 
 
-<h3>${item.grammarTitle}</h3>
-
-
-<video controls src="${item.video}"></video>
+<h3>
+${item.grammar_title}
+</h3>
 
 
 <p>
 
-${item.subGrammars.join(", ")}
+<b>Sub Grammars:</b>
+
+<br>
+
+${item.sub_grammars}
 
 </p>
 
 
+
+<video controls>
+
+<source src="${item.video_url}" type="video/mp4">
+
+</video>
+
+
+
+<br><br>
+
+
+<a href="${item.quiz_link}" target="_blank">
+
+Open Quiz
+
+</a>
+
+
+
+<br><br>
+
+
 <button class="delete"
 
-onclick="deleteGrammar(${item.id})">
+onclick="deleteVideo(${item.id})">
 
 Delete
 
@@ -905,14 +448,44 @@ Delete
 
 </div>
 
-
 `;
-
 
 
 });
 
 
+}
+
+
+
+
+
+
+// ===============================
+// DELETE
+// ===============================
+
+
+async function deleteVideo(id){
+
+
+if(!confirm("Delete this video?"))
+return;
+
+
+
+await supabaseClient
+
+.from("grammarVideos")
+
+.delete()
+
+.eq("id",id);
+
+
+
+loadVideos();
+
 
 }
 
@@ -921,55 +494,10 @@ Delete
 
 
 
-
-function deleteGrammar(id){
-
-
-
-let data=getGrammarVideos();
-
-
-
-data=data.filter(
-
-x=>x.id!=id
-
-);
-
-
-
-localStorage.setItem(
-
-"grammarVideos",
-
-JSON.stringify(data)
-
-);
-
-
-
-showGrammarVideos();
-
-
-
-}
-
-
-
-
-
-
-
-
-showUnits();
-
-
-showGrammarVideos();
-
+loadVideos();
 
 
 </script>
-
 
 
 </body>
