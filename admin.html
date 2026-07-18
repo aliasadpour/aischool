@@ -3,10 +3,9 @@
 
 <head>
 
-<title>Grammar Video Admin</title>
+<title>Ali Academy Admin Panel</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 
 <style>
 
@@ -14,26 +13,26 @@ body{
 font-family:Arial;
 background:#0f172a;
 color:white;
-padding:40px;
+padding:30px;
 }
 
 .container{
-max-width:900px;
+max-width:1000px;
 margin:auto;
 }
 
 .card{
 background:#ffffff22;
-padding:30px;
+padding:25px;
 border-radius:20px;
 margin-bottom:25px;
 }
 
-input,textarea,button{
+input,select,textarea,button{
 
 width:90%;
-padding:15px;
-margin:10px;
+padding:12px;
+margin:8px;
 border-radius:10px;
 border:none;
 
@@ -43,7 +42,6 @@ textarea{
 height:100px;
 }
 
-
 button{
 
 background:#22c55e;
@@ -52,23 +50,20 @@ cursor:pointer;
 
 }
 
-
-.video{
+.item{
 
 background:#0005;
 padding:20px;
+margin:15px 0;
 border-radius:15px;
-margin:20px 0;
 
 }
 
-
-video{
+audio,video{
 
 width:100%;
 
 }
-
 
 .delete{
 
@@ -88,21 +83,83 @@ background:red;
 
 
 <h1>
-🎥 Grammar Video Admin
+👨‍🏫 Ali Academy Admin Panel
 </h1>
+
+
+
+<!-- ===========================
+ASSESSMENT AUDIO SECTION
+=========================== -->
 
 
 <div class="card">
 
 
-<h2>Add Grammar Video</h2>
+<h2>
+🎧 Assessment Audio Units
+</h2>
+
+
+<select id="course">
+
+<option>Business English</option>
+<option>KET</option>
+<option>PET</option>
+<option>FCE</option>
+<option>Trinity Grade 1</option>
+<option>Trinity Grade 2</option>
+<option>Trinity Grade 3</option>
+<option>Trinity Grade 4</option>
+<option>Trinity Grade 5</option>
+<option>Trinity Grade 6</option>
+
+</select>
+
+
+<input 
+id="unitName"
+placeholder="Unit name">
+
+
+<input 
+id="audioFile"
+type="file"
+accept="audio/*">
+
+
+<button onclick="addUnit()">
+
+Upload Audio Unit
+
+</button>
+
+
+<div id="unitsList"></div>
+
+
+</div>
+
+
+
+
+
+<!-- ===========================
+GRAMMAR VIDEO SECTION
+=========================== -->
+
+
+<div class="card">
+
+
+<h2>
+🎥 Grammar Videos
+</h2>
 
 
 <input
 id="grammarTitle"
 placeholder="Grammar title">
-
-<br>
 
 
 <textarea
@@ -110,15 +167,13 @@ id="subGrammar"
 placeholder="Sub grammars
 
 Example:
-Positive sentences,
-Negative sentences,
-Questions,
+
+Positive sentences
+Negative sentences
+Questions
 Short answers">
 
 </textarea>
-
-
-<br>
 
 
 <input
@@ -127,104 +182,92 @@ type="file"
 accept="video/mp4">
 
 
-<br>
-
-
 <input
 id="quizLink"
 placeholder="Google Quiz Link">
 
 
-<br>
+<button onclick="addGrammarVideo()">
 
-
-<button onclick="addVideo()">
-
-Upload Video
+Upload Grammar Video
 
 </button>
 
 
-<p id="status"></p>
+<div id="videosList"></div>
 
 
 </div>
-
-
-
-<div class="card">
-
-<h2>
-Uploaded Videos
-</h2>
-
-
-<div id="list"></div>
-
-
-</div>
-
-
-</div>
-
-
-
-
-
 <script>
 
 
-// ===============================
+// =====================================
 // SUPABASE CONNECTION
-// ===============================
+// =====================================
 
 
 const SUPABASE_URL =
+
 "https://xtmjnawhfxfdjlijfxgj.supabase.co";
 
 
+
 const SUPABASE_KEY =
-"PASTE_YOUR_KEY_HERE";
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0bWpuYXdoZnhmZGpsaWpmeGdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzODkzNTksImV4cCI6MjA5OTY1MzV9.EXemiLr6GbCN5yFzLtmotBVW2EPFKKxCRQ0m8cx0O8s";
+
 
 
 const supabaseClient =
+
 supabase.createClient(
+
 SUPABASE_URL,
+
 SUPABASE_KEY
+
 );
 
 
 
 
 
-// ===============================
-// UPLOAD VIDEO TO STORAGE
-// ===============================
+// =====================================
+// UPLOAD FILE TO SUPABASE STORAGE
+// =====================================
 
 
-async function uploadVideo(file){
+async function uploadFile(bucket,file){
 
 
-let filename =
-Date.now()+"-"+file.name;
+let fileName =
+
+Date.now() + "-" + file.name;
 
 
 
-let {data,error}=
+const {data,error}=
 
 await supabaseClient
+
 .storage
-.from("lesson-videos")
+
+.from(bucket)
+
 .upload(
-filename,
+
+fileName,
+
 file
+
 );
 
 
 
 if(error){
 
-alert(error.message);
+alert(
+"Upload error: " + error.message
+);
 
 return null;
 
@@ -233,13 +276,18 @@ return null;
 
 
 
-let url =
+const url =
 
 supabaseClient
+
 .storage
-.from("lesson-videos")
-.getPublicUrl(filename)
+
+.from(bucket)
+
+.getPublicUrl(fileName)
+
 .data
+
 .publicUrl;
 
 
@@ -254,38 +302,37 @@ return url;
 
 
 
-// ===============================
-// ADD VIDEO
-// ===============================
+
+// =====================================
+// ADD AUDIO UNIT
+// =====================================
 
 
-async function addVideo(){
-
-
-
-let title =
-document.getElementById("grammarTitle").value;
+async function addUnit(){
 
 
 
-let sub =
-document.getElementById("subGrammar").value;
+let course =
+
+document.getElementById("course").value;
+
+
+
+let name =
+
+document.getElementById("unitName").value;
 
 
 
 let file =
-document.getElementById("videoFile").files[0];
+
+document.getElementById("audioFile").files[0];
 
 
 
-let quiz =
-document.getElementById("quizLink").value;
+if(!file){
 
-
-
-if(!title || !file){
-
-alert("Enter title and choose video");
+alert("Please select audio");
 
 return;
 
@@ -293,25 +340,138 @@ return;
 
 
 
-document.getElementById("status").innerHTML =
-"Uploading...";
+let audioURL =
+
+await uploadFile(
+
+"lesson-audio",
+
+file
+
+);
 
 
 
-let videoURL =
-await uploadVideo(file);
+if(!audioURL)
 
-
-
-if(!videoURL)
 return;
 
 
 
-let {error}=
+
+
+const {error}=
 
 await supabaseClient
+
+.from("units")
+
+.insert({
+
+course:course,
+
+name:name,
+
+audio_url:audioURL
+
+});
+
+
+
+
+if(error){
+
+alert(error.message);
+
+return;
+
+}
+
+
+
+alert("Audio Unit Added");
+
+
+
+loadUnits();
+
+
+}
+
+
+
+
+
+
+
+// =====================================
+// ADD GRAMMAR VIDEO
+// =====================================
+
+
+async function addGrammarVideo(){
+
+
+
+let title =
+
+document.getElementById("grammarTitle").value;
+
+
+
+let sub =
+
+document.getElementById("subGrammar").value;
+
+
+
+let file =
+
+document.getElementById("videoFile").files[0];
+
+
+
+let quiz =
+
+document.getElementById("quizLink").value;
+
+
+
+if(!file){
+
+alert("Please select video");
+
+return;
+
+}
+
+
+
+let videoURL =
+
+await uploadFile(
+
+"lesson-videos",
+
+file
+
+);
+
+
+
+if(!videoURL)
+
+return;
+
+
+
+
+const {error}=
+
+await supabaseClient
+
 .from("grammarVideos")
+
 .insert({
 
 grammar_title:title,
@@ -326,6 +486,7 @@ quiz_link:quiz
 
 
 
+
 if(error){
 
 alert(error.message);
@@ -336,8 +497,8 @@ return;
 
 
 
-document.getElementById("status").innerHTML =
-"✅ Uploaded";
+alert("Grammar Video Added");
+
 
 
 loadVideos();
@@ -351,35 +512,46 @@ loadVideos();
 
 
 
-// ===============================
-// LOAD VIDEOS
-// ===============================
+// =====================================
+// LOAD AUDIO UNITS
+// =====================================
 
 
-async function loadVideos(){
+async function loadUnits(){
 
 
 
-let {data,error}=
+const {data,error}=
 
 await supabaseClient
-.from("grammarVideos")
+
+.from("units")
+
 .select("*")
-.order("id",{ascending:false});
+
+.order(
+
+"id",
+
+{ascending:false}
+
+);
 
 
 
-let list =
-document.getElementById("list");
+let box =
+
+document.getElementById("unitsList");
 
 
-list.innerHTML="";
+
+box.innerHTML="";
 
 
 
 if(error){
 
-list.innerHTML=error.message;
+box.innerHTML=error.message;
 
 return;
 
@@ -390,17 +562,110 @@ return;
 data.forEach(item=>{
 
 
-list.innerHTML +=
+box.innerHTML +=
 
 
 `
 
-<div class="video">
+<div class="item">
 
 
 <h3>
-${item.grammar_title}
+
+${item.course}
+
 </h3>
+
+
+<p>
+
+${item.name}
+
+</p>
+
+
+
+<audio controls>
+
+<source src="${item.audio_url}">
+
+</audio>
+
+
+</div>
+
+`;
+
+
+});
+
+
+
+}
+
+  // =====================================
+// LOAD GRAMMAR VIDEOS
+// =====================================
+
+
+async function loadVideos(){
+
+
+const {data,error}=
+
+await supabaseClient
+
+.from("grammarVideos")
+
+.select("*")
+
+.order(
+
+"id",
+
+{ascending:false}
+
+);
+
+
+
+let box =
+
+document.getElementById("videosList");
+
+
+
+box.innerHTML="";
+
+
+
+if(error){
+
+box.innerHTML=error.message;
+
+return;
+
+}
+
+
+
+data.forEach(item=>{
+
+
+box.innerHTML +=
+
+
+`
+
+<div class="item">
+
+
+<h3>
+
+${item.grammar_title}
+
+</h3>
+
 
 
 <p>
@@ -428,27 +693,16 @@ ${item.sub_grammars}
 
 <a href="${item.quiz_link}" target="_blank">
 
-Open Quiz
+Open Google Quiz
 
 </a>
 
 
 
-<br><br>
-
-
-<button class="delete"
-
-onclick="deleteVideo(${item.id})">
-
-Delete
-
-</button>
-
-
 </div>
 
 `;
+
 
 
 });
@@ -461,44 +715,21 @@ Delete
 
 
 
-// ===============================
-// DELETE
-// ===============================
+// =====================================
+// START
+// =====================================
 
 
-async function deleteVideo(id){
-
-
-if(!confirm("Delete this video?"))
-return;
-
-
-
-await supabaseClient
-
-.from("grammarVideos")
-
-.delete()
-
-.eq("id",id);
-
-
+loadUnits();
 
 loadVideos();
 
-
-}
-
-
-
-
-
-
-loadVideos();
 
 
 </script>
 
+
+</div>
 
 </body>
 
