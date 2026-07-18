@@ -238,7 +238,9 @@ SUPABASE_KEY
 
 async function uploadFile(bucket,file){
 
-
+console.log("Uploading:", file.name);
+console.log("Bucket:", bucket);
+  
 let fileName =
 
 Date.now() + "-" + file.name;
